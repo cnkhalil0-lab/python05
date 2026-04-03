@@ -74,7 +74,7 @@ class TransactionStream(DataStream):
             net_flow = 0
 
             for op in data_batch:
-                texte_op = str(op)  
+                texte_op = str(op)
 
                 morceaux = texte_op.split(':')
 
@@ -97,7 +97,7 @@ class TransactionStream(DataStream):
         except Exception as e:
             return f"Transaction failure: {e}"
 
-    def filter_data(self, data_batch: List[Any], 
+    def filter_data(self, data_batch: List[Any],
                     criteria: Optional[str] = None) -> List[Any]:
 
         if criteria == "buy" or criteria == "sell":
