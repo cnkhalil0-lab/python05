@@ -35,7 +35,8 @@ class NumericProcessor(DataProcessor):
             else:
                 average = 0.0
 
-            res = f"Processed {count} numeric values, sum={total}, avg={average}"
+            res = (f"Processed {count} numeric values, "
+                   f"sum={total}, avg={average}")
             return super().format_output(res)
         except Exception as e:
             return f"Error: {e}"
@@ -53,7 +54,8 @@ class TextProcessor(DataProcessor):
             char_count = len(data)
             word_count = len(data.split())
 
-            res = f"Processed text: {char_count} characters, {word_count} words"
+            res = (f"Processed text: {char_count} characters, "
+                   f"{word_count} words")
             return super().format_output(res)
         except Exception as e:
             return f"Error: {e}"
