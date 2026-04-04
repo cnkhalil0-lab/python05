@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import typing
+from typing import Any, Union
 
 
 class DataProcessor(ABC):
@@ -8,33 +8,34 @@ class DataProcessor(ABC):
         self.rank: int = 0
 
     @abstractmethod
-    def validate(self, data: typing.Any) -> bool:
+    def validate(self, data: Any) -> bool:
         pass
 
     @abstractmethod
-    def ingest(self, data: typing.Any) -> None:
+    def ingest(self, data: Any) -> None:
         pass
 
     def output(self) -> tuple[int, str]:
-        if len(self.storage) == 0:
+        if not self.storage:
             raise ValueError("Aucune donnee a extraire.")
         return self.storage.pop(0)
 
 
 class NumericProcessor(DataProcessor):
-    def validate(self, data: typing.Any) -> bool:
-        if isinstance(data, int) or isinstance(data, float):
+    def validate(self, data: Any) -> bool:
+        if isinstance(data, (int, float)):
             return True
-
         if isinstance(data, list):
             for item in data:
-                if not (isinstance(item, int) or isinstance(item, float)):
+                if not isinstance(item, (int, float)):
                     return False
             return True
         return False
 
-    def ingest(self, data: int | float | list[int | float]) -> None:
-        if self.validate(data) is False:
+    def ingest(
+        self, data: Union[int, float, list[Union[int, float]]]
+    ) -> None:
+        if not self.validate(data):
             raise ValueError("Improper numeric data")
 
         if isinstance(data, list):
@@ -47,10 +48,9 @@ class NumericProcessor(DataProcessor):
 
 
 class TextProcessor(DataProcessor):
-    def validate(self, data: typing.Any) -> bool:
+    def validate(self, data: Any) -> bool:
         if isinstance(data, str):
             return True
-
         if isinstance(data, list):
             for item in data:
                 if not isinstance(item, str):
@@ -58,8 +58,8 @@ class TextProcessor(DataProcessor):
             return True
         return False
 
-    def ingest(self, data: str | list[str]) -> None:
-        if self.validate(data) is False:
+    def ingest(self, data: Union[str, list[str]]) -> None:
+        if not self.validate(data):
             raise ValueError("Improper text data")
 
         if isinstance(data, list):
@@ -72,8 +72,8 @@ class TextProcessor(DataProcessor):
 
 
 class LogProcessor(DataProcessor):
-    def validate(self, data: typing.Any) -> bool:
-        def is_valid_dict(d: typing.Any) -> bool:
+    def validate(self, data: Any) -> bool:
+        def is_valid_dict(d: Any) -> bool:
             if not isinstance(d, dict):
                 return False
             for key, value in d.items():
@@ -81,18 +81,19 @@ class LogProcessor(DataProcessor):
                     return False
             return True
 
-        if is_valid_dict(data) is True:
+        if is_valid_dict(data):
             return True
-
         if isinstance(data, list):
             for item in data:
-                if is_valid_dict(item) is False:
+                if not is_valid_dict(item):
                     return False
             return True
         return False
 
-    def ingest(self, data: dict[str, str] | list[dict[str, str]]) -> None:
-        if self.validate(data) is False:
+    def ingest(
+        self, data: Union[dict[str, str], list[dict[str, str]]]
+    ) -> None:
+        if not self.validate(data):
             raise ValueError("Improper log data")
 
         def format_log(log: dict[str, str]) -> str:
@@ -116,13 +117,10 @@ class DataStream:
     def register_processor(self, proc: DataProcessor) -> None:
         self.processors.append(proc)
 
-    def process_stream(self, stream: list[typing.Any]) -> None:
+    def process_stream(self, stream: list[Any]) -> None:
         for item in stream:
-
             element_processed = False
-
             for processor in self.processors:
-
                 if processor.validate(item) is True:
                     processor.ingest(item)
                     element_processed = True
@@ -136,22 +134,18 @@ class DataStream:
 
     def print_processors_stats(self) -> None:
         print("== DataStream statistics ==")
-
         if len(self.processors) == 0:
             print("No processor found, no data")
             return
 
         for processor in self.processors:
-
             class_name = processor.__class__.__name__
-
             total_processed = processor.rank
             remaining = len(processor.storage)
-
             print(
                 f"{class_name}: total {total_processed} items processed, "
                 f"remaining {remaining} on processor"
-                )
+            )
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Union
 
 
 class DataProcessor(ABC):
@@ -32,7 +32,9 @@ class NumericProcessor(DataProcessor):
             return True
         return False
 
-    def ingest(self, data: int | float | list[int | float]) -> None:
+    def ingest(
+        self, data: Union[int, float, list[Union[int, float]]]
+    ) -> None:
         if not self.validate(data):
             raise ValueError("Improper numeric data")
 
@@ -56,7 +58,7 @@ class TextProcessor(DataProcessor):
             return True
         return False
 
-    def ingest(self, data: str | list[str]) -> None:
+    def ingest(self, data: Union[str, list[str]]) -> None:
         if not self.validate(data):
             raise ValueError("Improper text data")
 
@@ -88,7 +90,9 @@ class LogProcessor(DataProcessor):
             return True
         return False
 
-    def ingest(self, data: dict[str, str] | list[dict[str, str]]) -> None:
+    def ingest(
+        self, data: Union[dict[str, str], list[dict[str, str]]]
+    ) -> None:
         if not self.validate(data):
             raise ValueError("Improper log data")
 
@@ -108,18 +112,18 @@ class LogProcessor(DataProcessor):
 
 if __name__ == "__main__":
     print("=== Code Nexus - Data Processor ===")
-
     print("Testing Numeric Processor...")
     num_proc = NumericProcessor()
-    print(f"Trying to validate input '42': {num_proc.validate('42')}")
+    print(f"Trying to validate input '42': {num_proc.validate(42)}")
     print(f"Trying to validate input 'Hello': {num_proc.validate('Hello')}")
-
-    print("Test invalid ingestion of string 'foo' without prior validation:")
+    print(
+        "Test invalid ingestion of string 'foo' "
+        "without prior validation:"
+    )
     try:
         num_proc.ingest("foo")
     except Exception as e:
         print(f"Got exception: {e}")
-
     print("Processing data: [1, 2, 3, 4, 5]")
     num_proc.ingest([1, 2, 3, 4, 5])
     print("Extracting 3 values...")
